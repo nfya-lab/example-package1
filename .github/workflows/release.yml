@@ -52,8 +52,11 @@ jobs:
         
     - name: Create package zip
       run: |
-        # UPMブランチの内容をzip化
-        git archive --format=zip --output="${{ steps.package.outputs.name }}-${{ steps.package.outputs.version }}.zip" HEAD
+        # パッケージディレクトリを作成してファイルをコピー
+        mkdir -p package-temp
+        rsync -av --exclude='.git' --exclude='.github' --exclude='package-temp' . package-temp/
+        cd package-temp
+        zip -r "../${{ steps.package.outputs.name }}-${{ steps.package.outputs.version }}.zip" .
         
     - name: Create Release
       uses: softprops/action-gh-release@v1
