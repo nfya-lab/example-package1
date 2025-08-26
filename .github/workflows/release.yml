@@ -83,3 +83,16 @@ jobs:
         files: ${{ steps.package.outputs.name }}-${{ steps.package.outputs.version }}.zip
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Notify VPM Repository
+      uses: peter-evans/repository-dispatch@v3
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        repository: nfya-lab/vpm-repo
+        event-type: package_updated
+        client-payload: |
+          {
+            "repository": "${{ github.server_url }}/${{ github.repository }}",
+            "package_name": "${{ steps.package.outputs.name }}",
+            "version": "${{ steps.package.outputs.version }}"
+          }
