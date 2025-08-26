@@ -1,17 +1,21 @@
-name: Create Release
+name: Create UPM Release
 
 on:
   push:
-    tags:
-      - 'v*'
+    branches:
+      - master
+      - main
 
 jobs:
   release:
+    if: startsWith(github.event.head_commit.message, 'Release ')
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
       uses: actions/checkout@v4
-      
+      with:
+        fetch-depth: 0
+        
     - name: Get package info
       id: package
       run: |
@@ -20,16 +24,53 @@ jobs:
         echo "name=${PACKAGE_NAME}" >> $GITHUB_OUTPUT
         echo "version=${VERSION}" >> $GITHUB_OUTPUT
         
+    - name: Check if tag exists
+      id: check_tag
+      run: |
+        if git rev-parse "v${{ steps.package.outputs.version }}" >/dev/null 2>&1; then
+          echo "exists=true" >> $GITHUB_OUTPUT
+        else
+          echo "exists=false" >> $GITHUB_OUTPUT
+        fi
+        
+    - name: Create and push tag
+      if: steps.check_tag.outputs.exists == 'false'
+      run: |
+        git tag "v${{ steps.package.outputs.version }}"
+        git push origin "v${{ steps.package.outputs.version }}"
+        
+    - name: Create UPM branch
+      run: |
+        git branch -d upm &> /dev/null || echo upm branch not found
+        git subtree push --prefix=/ origin upm
+        
     - name: Create package zip
       run: |
-        zip -r "${{ steps.package.outputs.name }}-${{ steps.package.outputs.version }}.zip" . -x ".git/*" ".github/*" "*.zip"
+        # UPMブランチの内容をzip化
+        git archive --format=zip --output="${{ steps.package.outputs.name }}-${{ steps.package.outputs.version }}.zip" HEAD
         
     - name: Create Release
       uses: softprops/action-gh-release@v1
       with:
+        tag_name: v${{ steps.package.outputs.version }}
         name: v${{ steps.package.outputs.version }}
         body: |
-          Release ${{ steps.package.outputs.version }} of ${{ steps.package.outputs.name }}
+          ## ${{ steps.package.outputs.name }} v${{ steps.package.outputs.version }}
+          
+          **Installation via VRChat Creator Companion:**
+          1. Add this repository to VCC: `https://nfya-lab.github.io/vpm-repo/index.json`
+          2. Install ${{ steps.package.outputs.name }} from the package list
+          
+          **Manual Installation via Package Manager:**
+          1. Open Window > Package Manager in Unity
+          2. Click the "+" button and select "Add package from git URL"
+          3. Enter: `https://github.com/${{ github.repository }}.git?path=/`
+          
+          **Download Package:**
+          Download the zip file below for manual installation.
+          
+          ### Changes
+          See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/v${{ steps.package.outputs.version }}/CHANGELOG.md) for details.
         files: ${{ steps.package.outputs.name }}-${{ steps.package.outputs.version }}.zip
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
