@@ -1,0 +1,35 @@
+name: Create Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      
+    - name: Get package info
+      id: package
+      run: |
+        PACKAGE_NAME=$(jq -r '.name' package.json)
+        VERSION=$(jq -r '.version' package.json)
+        echo "name=${PACKAGE_NAME}" >> $GITHUB_OUTPUT
+        echo "version=${VERSION}" >> $GITHUB_OUTPUT
+        
+    - name: Create package zip
+      run: |
+        zip -r "${{ steps.package.outputs.name }}-${{ steps.package.outputs.version }}.zip" . -x ".git/*" ".github/*" "*.zip"
+        
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        name: v${{ steps.package.outputs.version }}
+        body: |
+          Release ${{ steps.package.outputs.version }} of ${{ steps.package.outputs.name }}
+        files: ${{ steps.package.outputs.name }}-${{ steps.package.outputs.version }}.zip
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
