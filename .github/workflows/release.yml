@@ -41,8 +41,10 @@ jobs:
         
     - name: Create UPM branch
       run: |
-        git branch -d upm &> /dev/null || echo upm branch not found
-        git subtree push --prefix=/ origin upm
+        git config --global user.name 'github-actions[bot]'
+        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+        git checkout -b upm
+        git push origin upm --force
         
     - name: Create package zip
       run: |
