@@ -13,7 +13,7 @@ namespace Nfya.ExamplePackage1.Editor
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("Example Package 1 - Editor Extension", EditorStyles.boldLabel);
             
-            if (GUILayout.Button("Test Example Method"))
+            if (GUILayout.Button("Test Example Method!"))
             {
                 var script = (ExampleScript1)target;
                 script.ExampleMethod();
