@@ -60,7 +60,7 @@ jobs:
       run: |
         # パッケージディレクトリを作成してファイルをコピー
         mkdir -p package-temp
-        rsync -av --exclude='.git' --exclude='.github' --exclude='package-temp' . package-temp/
+        rsync -av --exclude='.git' --exclude='.github' --exclude='package-temp' --exclude='release.bat' --exclude='*.bat' . package-temp/
         
         # ZIP ファイル作成 (VPM用)
         cd package-temp
