@@ -2,6 +2,11 @@
 
 All notable changes to this package will be documented in this file.
 
+## [1.0.1] - -08-28
+
+### Changed
+- added EditorWindow
+
 ## [1.0.0] - -08-28
 
 ### Changed
