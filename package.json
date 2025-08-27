@@ -1,18 +1,14 @@
 {
   "name": "net.nfya.example-package1",
   "displayName": "Example Package 1",
-  "version": "1.0.3",
+  "version": "1.0.0",
   "description": "First example VRChat package for testing VPM repository",
   "unity": "2022.3",
   "unityRelease": "6f1",
   "author": {
     "name": "nfya",
-    "email": "quz62528@gmail.com",
     "url": "https://github.com/nfya-lab"
   },
-  "changelogUrl": "https://github.com/nfya-lab/example-package1/blob/main/CHANGELOG.md",
-  "documentationUrl": "https://github.com/nfya-lab/example-package1/blob/main/README.md",
-  "licensesUrl": "https://github.com/nfya-lab/example-package1/blob/main/LICENSE.md",
   "dependencies": {
     "com.vrchat.avatars": "3.5.0",
     "com.vrchat.base": "3.5.0"
