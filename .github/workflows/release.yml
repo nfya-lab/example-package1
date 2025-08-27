@@ -51,13 +51,33 @@ jobs:
         git checkout -b upm
         git push origin upm --force
         
-    - name: Create package zip
+    - name: Setup Unity
+      uses: unity-actions/setup-unity@v2
+      with:
+        unity-version: 2022.3.6f1
+        
+    - name: Create package files
       run: |
         # パッケージディレクトリを作成してファイルをコピー
         mkdir -p package-temp
         rsync -av --exclude='.git' --exclude='.github' --exclude='package-temp' . package-temp/
+        
+        # ZIP ファイル作成 (VPM用)
         cd package-temp
         zip -r "../${{ steps.package.outputs.name }}-${{ steps.package.outputs.version }}.zip" .
+        cd ..
+        
+        # UnityPackage 作成用のプロジェクト構造を準備
+        mkdir -p unity-project/Assets/Packages/${{ steps.package.outputs.name }}
+        cp -r package-temp/* unity-project/Assets/Packages/${{ steps.package.outputs.name }}/
+        
+        # Unity でunitypackage を作成
+        unity-editor \
+          -batchmode \
+          -quit \
+          -projectPath ./unity-project \
+          -exportPackage Assets/Packages/${{ steps.package.outputs.name }} ${{ steps.package.outputs.name }}-${{ steps.package.outputs.version }}.unitypackage \
+          -logFile /dev/stdout
         
     - name: Create Release
       uses: softprops/action-gh-release@v1
@@ -77,11 +97,14 @@ jobs:
           3. Enter: `https://github.com/${{ github.repository }}.git?path=/`
           
           **Download Package:**
-          Download the zip file below for manual installation.
+          - **ZIP file**: For VPM/UPM installation
+          - **UnityPackage file**: For traditional Unity asset installation
           
           ### Changes
           See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/v${{ steps.package.outputs.version }}/CHANGELOG.md) for details.
-        files: ${{ steps.package.outputs.name }}-${{ steps.package.outputs.version }}.zip
+        files: |
+          ${{ steps.package.outputs.name }}-${{ steps.package.outputs.version }}.zip
+          ${{ steps.package.outputs.name }}-${{ steps.package.outputs.version }}.unitypackage
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         
